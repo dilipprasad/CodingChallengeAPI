@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodingChallenge.DataLayer\CodingChallenge.DataLayer.csproj" />
+    <ProjectReference Include="..\CodingChallenge.Logging.Interface\CodingChallenge.Logging.Interface.csproj" />
+    <ProjectReference Include="..\CodingChallenge.Models\CodingChallenge.Models.csproj" />
+  </ItemGroup>
+
+</Project>
