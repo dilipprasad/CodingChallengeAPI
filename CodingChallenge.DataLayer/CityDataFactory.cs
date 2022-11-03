@@ -1,4 +1,4 @@
-﻿using CodingChallenge.Models;
+﻿using CodingChallenge.DataLayer.DTO;
 
 namespace CodingChallenge.DataLayer
 {
@@ -12,15 +12,10 @@ namespace CodingChallenge.DataLayer
         }
 
 
-        public async Task<CityDetails> GetZipCodeByCity(string zipCode)
+        public async Task<CityDetailsDTO> GetZipCodeByCity(string zipCode)
         {
-            var cityDetailsDTO=await _dataLayer.GetCityDetails(zipCode);
-            var a = cityDetailsDTO.Select(x => new CityDetails
-            {
-                City = x.City,
-                ZipCode = x.ZipCode
-            }).First();
-            return await Task.FromResult(a);
+           return   _dataLayer.GetCityDetails(zipCode).Result.First();// Returning first data temporarily
+            
         }
     }
 }

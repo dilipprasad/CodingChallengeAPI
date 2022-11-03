@@ -1,9 +1,9 @@
-﻿using CodingChallenge.Models;
+﻿using CodingChallenge.DataLayer.DTO;
 
 namespace CodingChallenge.DataLayer
 {
     public interface ICityDataFactory
     {
-        Task<CityDetails> GetZipCodeByCity(string zipCode);
+        Task<CityDetailsDTO> GetZipCodeByCity(string zipCode);
     }
 }

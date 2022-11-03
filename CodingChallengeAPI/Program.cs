@@ -1,5 +1,14 @@
+using AutoMapper;
+using CodingChallenge.Business;
+using CodingChallenge.Business.Interfaces;
+using CodingChallenge.DataLayer;
+using CodingChallenge.DataLayer.DTO;
+using CodingChallenge.DataLayer.Factories;
+using CodingChallenge.DataLayer.Factories.Interfaces;
 using CodingChallenge.Logging;
 using CodingChallenge.Logging.Interface;
+using CodingChallenge.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace CodingChallengeAPI
 {
@@ -31,12 +40,22 @@ namespace CodingChallengeAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            //Adding Automapper
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+         
+
 
             var _logger = new LoggerFactory().CreateLogger("CustomCategory");
             
             //Adding Custom middlewre to handle the logs
             builder.Services.AddScoped<CodingChallenge.Logging.Interface.ILogging, CodingChallenge.Logging.Logger>();
 
+            //Adding other mappings
+            builder.Services.AddScoped<IDataLayer, DataLayer>();
+            builder.Services.AddScoped<IObjectDataFactory, ObjectDataFactory>();
+            builder.Services.AddScoped<ICityBusinessProvider,CityBusinessProvider>();
+            
             var maxBodySizeToCache = Convert.ToInt32(config["Values:MaxBodySizeToCache"]);
             //Enabling response caching
             builder.Services.AddResponseCaching(options =>
