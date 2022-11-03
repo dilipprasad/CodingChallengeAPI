@@ -74,11 +74,11 @@ namespace CodingChallengeAPI.Controllers
                 {//Data is not in memory return cached response
                     _logger.LogInformation(_logTitle + " Found City data for zipcode from memory.", zipCode);
                     
-                    var result = new List<CityDetails> { await _cityBusinessProvider.GetZipCodeByCity(zipCode) };
+                    var result = new List<CityDetails> { await _cityBusinessProvider.GetZipCodeByCity(zipCode) }; // TO DO change this
 
                     if (result != null)
                         _logger.LogInformation(_logTitle + "Caching data for zipcode", zipCode, result);
-                        _memoryCache.Set<List<CityDetails>>(zipCode, result);
+                        _memoryCache.Set<List<CityDetails>>(zipCode, result, MemoryCacheOption);
                         response.CityDetails = result;
 
                 }

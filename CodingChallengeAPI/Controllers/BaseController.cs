@@ -1,10 +1,21 @@
 ﻿using CodingChallenge.Models.Response;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CodingChallengeAPI.Controllers
 {
     public class BaseController : ControllerBase
     {
+        protected  MemoryCacheEntryOptions MemoryCacheOption { get; private set; }
+
+        public BaseController(IConfiguration config)
+        {
+            var serverMemCacheDuration = Convert.ToInt32(config["Values:ServerMemoryCacheDurationInSeconds"]);
+            MemoryCacheOption = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromSeconds(serverMemCacheDuration));//Using sliding expiration to keep in memory most recently accessed items
+
+        }
+
         /// <summary>
         /// Use this if the Request object has issues like missing request parameters
         /// </summary>
@@ -45,7 +56,7 @@ namespace CodingChallengeAPI.Controllers
         /// <param name="title"></param>
         /// <returns></returns>
         [ApiExplorerSettings(IgnoreApi = true)]
-        protected IActionResult HandleException(String title,ResponseBase response, Exception ex)
+        protected IActionResult HandleException(String title, ResponseBase response, Exception ex)
         {
             response.IsSuccess = ResponseStatus.FAILED;
 
