@@ -8,7 +8,12 @@ namespace CodingChallenge.Business.MapperSetup
     {
         public MapperProfile()
         {
-            CreateMap<CityDetails, CityDetailsDTO>();
+            CreateMap<CityDetails, CityDetailsDTO>()
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.ZipCode, opt => opt.MapFrom(src => src.ZipCode));
+
+            //Can Add more mappings here
+
         }
     }
 }

@@ -5,10 +5,17 @@ namespace CodingChallenge.Business.MapperSetup
 
     public class ObjectMapper
     {
-        public static IMapper Mapper
+
+        public static Lazy<IConfigurationProvider> config = new Lazy<IConfigurationProvider>(() =>
         {
-            get { return mapper.Value; }
-        }
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<CodingChallenge.Business.MapperSetup.MapperProfile>();//Use the profile created as a seperate class with the mappings
+
+            });
+
+            return config;
+        });
 
         public static IConfigurationProvider Configuration
         {
@@ -17,19 +24,14 @@ namespace CodingChallenge.Business.MapperSetup
 
         public static Lazy<IMapper> mapper = new Lazy<IMapper>(() =>
         {
-            var mapper = new Mapper(Configuration);
-            return mapper;
+            return new Mapper(Configuration);
+            
         });
 
-        public static Lazy<IConfigurationProvider> config = new Lazy<IConfigurationProvider>(() =>
+        public static IMapper Mapper
         {
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile<CodingChallenge.Business.MapperSetup.MapperProfile>();
-                
-            });
+            get { return mapper.Value; }
+        }
 
-            return config;
-        });
     }
 }
