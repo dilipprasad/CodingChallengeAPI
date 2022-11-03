@@ -35,7 +35,7 @@ namespace CodingChallengeAPI
             var _logger = new LoggerFactory().CreateLogger("CustomCategory");
             
             //Adding Custom middlewre to handle the logs
-            builder.Services.AddScoped<CodingChallenge.Logging.Interface.ILogging, CodingChallenge.Logging.Logger>(_logger);
+            builder.Services.AddScoped<CodingChallenge.Logging.Interface.ILogging, CodingChallenge.Logging.Logger>();
 
             var maxBodySizeToCache = Convert.ToInt32(config["Values:MaxBodySizeToCache"]);
             //Enabling response caching

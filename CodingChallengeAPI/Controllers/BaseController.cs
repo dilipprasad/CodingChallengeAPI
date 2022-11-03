@@ -45,7 +45,7 @@ namespace CodingChallengeAPI.Controllers
         /// <param name="title"></param>
         /// <returns></returns>
         [ApiExplorerSettings(IgnoreApi = true)]
-        protected IActionResult HandleException(ResponseBase response, Exception ex, String title)
+        protected IActionResult HandleException(String title,ResponseBase response, Exception ex)
         {
             response.IsSuccess = ResponseStatus.FAILED;
 

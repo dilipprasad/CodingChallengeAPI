@@ -15,12 +15,12 @@ namespace CodingChallenge.DataLayer
         public async Task<CityDetails> GetZipCodeByCity(string zipCode)
         {
             var cityDetailsDTO=await _dataLayer.GetCityDetails(zipCode);
-
-            return Task<CityDetails>.FromResult(cityDetailsDTO.Select(x => new CityDetails
+            var a = cityDetailsDTO.Select(x => new CityDetails
             {
-                City = x.City
+                City = x.City,
                 ZipCode = x.ZipCode
-            });
+            }).First();
+            return await Task.FromResult(a);
         }
     }
 }

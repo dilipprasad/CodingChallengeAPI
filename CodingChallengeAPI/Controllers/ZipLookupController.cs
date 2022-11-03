@@ -1,5 +1,6 @@
 using CodingChallenge.Business.Interfaces;
 using CodingChallenge.Models;
+using CodingChallenge.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Text;
@@ -40,38 +41,54 @@ namespace CodingChallengeAPI.Controllers
         public async Task<IActionResult> GetCityByZipCode(string zipCode)
         {
             _logger.LogInformation(_logTitle + " Begin of GetCityByZipCode", zipCode);
-            StringBuilder sb = new StringBuilder();//Using string builder incase of multiple errors
+            StringBuilder sbValidation = new StringBuilder();//Using string builder incase of multiple errors
+            SearchCityByZipCodeResponse response = new SearchCityByZipCodeResponse();
             try
             {
-                bool hasValidationEror = false;
+                #region Validation
+                                bool hasValidationEror = false;
 
-                if (string.IsNullOrWhiteSpace(zipCode))
-                    _logger.LogWarning(_logTitle + " GetCityByZipCode(). Zip Code is null or empty", zipCode);
-                    hasValidationEror = true;
-                    sb.AppendLine(" Zip Code is null or empty");
+                                if (string.IsNullOrWhiteSpace(zipCode))
+                                {
+                                    _logger.LogWarning(_logTitle + " GetCityByZipCode(). Zip Code is null or empty", zipCode);
+                                    hasValidationEror = true;
+                                    sbValidation.AppendLine(" Zip Code is null or empty");
 
+                                }
 
-                return BuildBadRequestActionResult(sb.ToString());
+                                if (hasValidationEror)
+                                    return BuildBadRequestActionResult(sbValidation.ToString());
+                #endregion Validation
+                if (_memoryCache != null && _memoryCache.Get<List<CityDetails>>(zipCode) != null)
+                {//Already has data in memory
+                    _logger.LogInformation(_logTitle + " Found City data for zipcode from memory.", zipCode);
+                    var result = _memoryCache.Get<List<CityDetails>>(zipCode);
+                    if (result != null)
+                        response.CityDetails = result;
 
-            if (_memoryCache != null && _memoryCache.Get<CityDetails>(zipCode) != null)
-                {
-
-                    return BuildActionResult(_memoryCache.Get<CityDetails>(zipCode));
                 }
                 else
-                {
-                    //Caching the response
-                    var cityDetails = await _cityDataFactory.GetZipCodeByCity(zipCode);
-                    _memoryCache.Set<CityDetails>(zipCode, cityDetails);
+                {//Data is not in memory return cached response
+                    _logger.LogInformation(_logTitle + " Found City data for zipcode from memory.", zipCode);
+                    
+                    var result = new List<CityDetails> { await _cityDataFactory.GetZipCodeByCity(zipCode) };
 
-                    return new CityDetails();
+                    if (result != null)
+                        _logger.LogInformation(_logTitle + "Caching data for zipcode", zipCode, result);
+                        _memoryCache.Set<List<CityDetails>>(zipCode, result);
+                        response.CityDetails = result;
+
                 }
+                _logger.LogInformation(_logTitle + " End of GetCityByZipCode", zipCode);
+                _logger.LogTrace(_logTitle + " API Response", response);
+                return BuildActionResult(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(_logTitle + " Error in GetCityByZipCode", zipCode,ex);
+                _logger.LogError(_logTitle + " Error in GetCityByZipCode", zipCode, ex);
+                return HandleException(_logTitle,response, ex);
             }
-           
+
 
         }
     }
