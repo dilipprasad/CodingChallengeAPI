@@ -1,12 +1,13 @@
 ﻿using CodingChallenge.Models.Response;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace CodingChallengeAPI.Controllers
 {
     public class BaseController : ControllerBase
     {
-        protected  MemoryCacheEntryOptions MemoryCacheOption { get; private set; }
+        protected MemoryCacheEntryOptions MemoryCacheOption { get; private set; }
 
         public BaseController(IConfiguration config)
         {
@@ -34,10 +35,9 @@ namespace CodingChallengeAPI.Controllers
         protected IActionResult BuildActionResult(ResponseBase response)
         {
             IActionResult result;
-            if (response == null || (!response.IsSuccess && !response.IsException))
+            if (response == null || response.IsException)
             {
                 result = Problem();
-
             }
             else //Populate common response items
             {

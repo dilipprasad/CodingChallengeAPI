@@ -26,7 +26,7 @@ namespace CodingChallengeAPI.Controllers
             if (memoryCache == null)
                 throw new Exception("Memory Cache object is null");
 
-            if(cityBusinessProvider==null)
+            if (cityBusinessProvider == null)
                 throw new Exception("City Business Provider object is null");
 
             _logger = logger;
@@ -50,48 +50,48 @@ namespace CodingChallengeAPI.Controllers
             try
             {
                 #region Validation
-                                bool hasValidationEror = false;
+                bool hasValidationEror = false;
 
-                                if (string.IsNullOrWhiteSpace(zipCode))
-                                {
-                                    _logger.LogWarning(_logTitle + " GetCityByZipCode(). Zip Code is null or empty", new[] { zipCode });
-                                    hasValidationEror = true;
-                                    sbValidation.AppendLine(" Zip Code is null or empty");
+                if (string.IsNullOrWhiteSpace(zipCode))
+                {
+                    _logger.LogWarning(_logTitle + " GetCityByZipCode(). Zip Code is null or empty", new[] { zipCode });
+                    hasValidationEror = true;
+                    sbValidation.AppendLine(" Zip Code is null or empty");
 
-                                }
+                }
 
-                                if (hasValidationEror)
-                                    return BuildBadRequestActionResult(sbValidation.ToString());
+                if (hasValidationEror)
+                    return BuildBadRequestActionResult(sbValidation.ToString());
                 #endregion Validation
 
-                if (_memoryCache != null && _memoryCache.Get<List<CityDetails>>(zipCode) != null)
-                {//Already has data in memory
-                    _logger.LogInfo(_logTitle + " Found City data for zipcode from memory.",new[] { zipCode });
-                    var result = _memoryCache.Get<List<CityDetails>>(zipCode);
-                    if (result != null)
-                        response.CityDetails = result;
+                List<CityDetails> result = null;
 
+                if (!_memoryCache.TryGetValue<List<CityDetails>>(zipCode, out result))
+                {
+                    //Data is not in memory return cached response
+                    _logger.LogInfo(_logTitle + " Did not find City data for zipcode from memory.", new[] { zipCode });
+                    result = await _cityBusinessProvider.GetZipCodeByCity(zipCode);
+                    //Now caching data
+                    _logger.LogInfo(_logTitle + "Caching data for zipcode", new[] { zipCode, result as object });
+                    _memoryCache.Set<List<CityDetails>>(zipCode, result, MemoryCacheOption);
                 }
                 else
-                {//Data is not in memory return cached response
-                    _logger.LogInfo(_logTitle + " Found City data for zipcode from memory.", new[] { zipCode });
-                    
-                    var result =  await _cityBusinessProvider.GetZipCodeByCity(zipCode);
-
-                    if (result != null)
-                        _logger.LogInfo(_logTitle + "Caching data for zipcode", new[] { zipCode, result as object } );
-                        _memoryCache.Set<List<CityDetails>>(zipCode, result, MemoryCacheOption);
-                        response.CityDetails = result;
+                {
+                    _logger.LogInfo(_logTitle + " Returning City data for zipcode from memory cache.", new[] { zipCode });
 
                 }
+                if (result != null)
+                    response.CityDetails = result;
+                    response.IsSuccess = true;
+
                 _logger.LogInfo(_logTitle + " End of GetCityByZipCode", new[] { zipCode });
                 _logger.LogTrace(_logTitle + " API Response", new[] { response });
                 return BuildActionResult(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(_logTitle + " Error in GetCityByZipCode", new[] { zipCode , ex as object } );
-                return HandleException(_logTitle,response, ex);
+                _logger.LogError(_logTitle + " Error in GetCityByZipCode", new[] { zipCode, ex as object });
+                return HandleException(_logTitle, response, ex);
             }
 
 

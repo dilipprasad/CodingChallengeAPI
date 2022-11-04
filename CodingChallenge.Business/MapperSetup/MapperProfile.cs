@@ -12,6 +12,11 @@ namespace CodingChallenge.Business.MapperSetup
                 .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
                 .ForMember(dest => dest.ZipCode, opt => opt.MapFrom(src => src.ZipCode));
 
+
+            CreateMap<CityDetailsDTO, CityDetails>()
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+            .ForMember(dest => dest.ZipCode, opt => opt.MapFrom(src => src.ZipCode));
+
             //Can Add more mappings here
 
         }
