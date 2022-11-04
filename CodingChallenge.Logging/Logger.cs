@@ -1,9 +1,8 @@
-﻿using CodingChallenge.Logging.Interface;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace CodingChallenge.Logging
 {
-    public class Logger<T> : CodingChallenge.Logging.Interface.ILogging<T>
+    public class Logger<T>  : CodingChallenge.Logging.Interface.ILogging<T> where T : class
     {
 
         private readonly ILogger<T> _logger;

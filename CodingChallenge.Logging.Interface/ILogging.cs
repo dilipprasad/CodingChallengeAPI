@@ -1,6 +1,6 @@
 ﻿namespace CodingChallenge.Logging.Interface
 {
-    public interface ILogging<T>
+    public interface ILogging<T> where T: class
     {
         void LogInfo(string message, object[]? args);
 
