@@ -1,7 +1,9 @@
-﻿namespace CodingChallenge.DataLayer.Factories.Interfaces
+﻿using CodingChallenge.DataLayer.DataProvider.Interfaces;
+
+namespace CodingChallenge.DataLayer.ObjectFactory.Interfaces
 {
     public interface IObjectDataFactory
     {
-        Task<ICityDataFactory> GetCityDataFactory();
+        Task<ICityDataProvider> GetCityDataFactory();
     }
 }

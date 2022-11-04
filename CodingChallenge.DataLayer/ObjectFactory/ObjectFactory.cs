@@ -1,6 +1,9 @@
-﻿using CodingChallenge.DataLayer.Factories.Interfaces;
+﻿using CodingChallenge.DataLayer.DataAdaptor;
+using CodingChallenge.DataLayer.DataProvider;
+using CodingChallenge.DataLayer.DataProvider.Interfaces;
+using CodingChallenge.DataLayer.ObjectFactory.Interfaces;
 
-namespace CodingChallenge.DataLayer.Factories
+namespace CodingChallenge.DataLayer.ObjectFactory
 {
     public class ObjectDataFactory : IObjectDataFactory
     {
@@ -12,9 +15,10 @@ namespace CodingChallenge.DataLayer.Factories
 
 
 
-        public async Task<ICityDataFactory> GetCityDataFactory()
+        public async Task<ICityDataProvider> GetCityDataFactory()
         {
-            return (ICityDataFactory)Task.FromResult(new CityDataFactory(_dataLayer));
+            //return Task.FromResult<ICityDataProvider>(new CityDataProvider(_dataLayer));
+            return new CityDataProvider(_dataLayer);
         }
 
     }

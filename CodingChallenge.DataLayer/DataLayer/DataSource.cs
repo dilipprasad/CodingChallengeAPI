@@ -1,31 +1,18 @@
 ﻿using CodingChallenge.DataLayer.DTO;
 
-namespace CodingChallenge.DataLayer
+namespace CodingChallenge.DataLayer.DataLayer
 {
     /// <summary>
-    /// This Implementation can be from DB or any other external API. For now  Harcoding the data
+    /// This class is used for returning test data
     /// </summary>
-    public class DataLayer : IDataLayer
+    public class DataSource : IDataSource
     {
-        private readonly List<CityDetailsDTO> _cityDetailsSource;
-        public DataLayer()
-        {
-            _cityDetailsSource =  GetCitySource().Result; //Awaits for result
-        }
-
-        public async Task<List<CityDetailsDTO>> GetCityDetails(string zipCode)
-        {
-            return await Task.FromResult<List<CityDetailsDTO>>( 
-
-                  _cityDetailsSource.Where(x => x.ZipCode.Contains(zipCode)).ToList()
-            );
-        }
 
         /// <summary>
         /// Real world scenario wont have this
         /// </summary>
         /// <returns></returns>
-        private Task<List<CityDetailsDTO>> GetCitySource()
+        public Task<List<CityDetailsDTO>> GetCitySource()
         {
             return Task.FromResult(new List<CityDetailsDTO>
             {
@@ -46,6 +33,8 @@ namespace CodingChallenge.DataLayer
                 new CityDetailsDTO{City="California", ZipCode="96162"  },
 
             });
+
         }
+
     }
 }
