@@ -4,6 +4,6 @@ namespace CodingChallenge.Business.Interfaces
 {
     public interface ICityBusinessProvider
     {
-        Task<CityDetails> GetZipCodeByCity(string zipCode);
+        Task<List<CityDetails>> GetZipCodeByCity(string zipCode);
     }
 }
