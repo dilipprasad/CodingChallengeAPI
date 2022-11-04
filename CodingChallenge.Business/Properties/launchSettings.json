@@ -7,22 +7,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:49320;http://localhost:49323"
-    },
-    "CodingChallengeAPI-local": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "local"
-      },
-      "applicationUrl": "https://localhost:49320;http://localhost:49323"
-    },
-    "CodingChallengeAPI-Development": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:49320;http://localhost:49323"
     }
   }
 }
