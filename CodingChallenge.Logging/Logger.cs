@@ -3,16 +3,16 @@ using Microsoft.Extensions.Logging;
 
 namespace CodingChallenge.Logging
 {
-    public class Logger : ILogging
+    public class Logger<T> : CodingChallenge.Logging.Interface.ILogging<T>
     {
 
-        private readonly ILogger _logger;
+        private readonly ILogger<T> _logger;
         private readonly string _logMessageSplitString = "----======================================---------------";
         /// <summary>
         /// Inject the Logger Type Via Constructor, Comes in Handy when we are writing mock tests or inject a absctracted version
         /// </summary>
         /// <param name="logger"></param>
-        public Logger(ILogger logger)
+        public Logger(ILogger<T> logger)
         {
             _logger = logger;
         }
@@ -28,6 +28,11 @@ namespace CodingChallenge.Logging
         public void LogError(string message, object[]? args)
         {
             _logger.Log(LogLevel.Error, message, args);
+        }
+
+        public void LogTrace(string message, object[]? args)
+        {
+            _logger.Log(LogLevel.Trace, message, args);
         }
 
         /// <summary>
