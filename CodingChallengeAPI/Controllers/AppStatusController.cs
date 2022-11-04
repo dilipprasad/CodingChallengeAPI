@@ -2,6 +2,8 @@
 
 namespace CodingChallengeAPI.Controllers
 {
+    //Disable caching
+    [ResponseCache(NoStore = true, Duration = 0)]
     public class AppStatusController : Controller
     {
         public string Ping()

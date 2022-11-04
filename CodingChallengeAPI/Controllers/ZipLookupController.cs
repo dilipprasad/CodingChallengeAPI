@@ -40,8 +40,7 @@ namespace CodingChallengeAPI.Controllers
         /// <param name="zipCode">alphanumeric value</param>
         /// <returns>City</returns>
         [HttpGet(Name = "GetCityByZipCode")]
-        //[ResponseCache(VaryByHeader = "User-Agent", Duration = 30)]
-        [ResponseCache(Duration = 10, Location = ResponseCacheLocation.Any, NoStore = false)]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "zipCode" })]
         public async Task<IActionResult> GetCityByZipCode(string zipCode)
         {
             _logger.LogInfo(_logTitle + " Begin of GetCityByZipCode", new[] { zipCode });
@@ -82,7 +81,7 @@ namespace CodingChallengeAPI.Controllers
                 }
                 if (result != null)
                     response.CityDetails = result;
-                    response.IsSuccess = true;
+                response.IsSuccess = true;
 
                 _logger.LogInfo(_logTitle + " End of GetCityByZipCode", new[] { zipCode });
                 _logger.LogTrace(_logTitle + " API Response", new[] { response });
