@@ -1,14 +1,4 @@
-using AutoMapper;
-using CodingChallenge.Business;
-using CodingChallenge.Business.Interfaces;
-using CodingChallenge.DataLayer;
-using CodingChallenge.DataLayer.DTO;
-using CodingChallenge.DataLayer.Factories;
-using CodingChallenge.DataLayer.Factories.Interfaces;
-using CodingChallenge.Logging;
-using CodingChallenge.Logging.Interface;
-using CodingChallenge.Models;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Console;
 
 namespace CodingChallengeAPI
 {
@@ -16,15 +6,16 @@ namespace CodingChallengeAPI
     {
         public static void Main(string[] args)
         {
-           var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             Console.WriteLine("Fetching Environment Variable ASPNETCORE_ENVIRONMENT =" + env);
 
+            // Appsetting file name based on Environment 
             var appSettingFileName = string.Join(".", "appsettings", env, "json");
             Console.WriteLine("AppSetting FileName =" + appSettingFileName);
 
 
-            
 
+            //Reding the configuration from Appsettings file
             var config = new ConfigurationBuilder()
                    .SetBasePath(Directory.GetCurrentDirectory())
                    .AddJsonFile(appSettingFileName).Build();
@@ -40,22 +31,31 @@ namespace CodingChallengeAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            //Enabling Memory Cache
+            builder.Services.AddMemoryCache();
+
             //Adding Automapper
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-         
 
-
-            var _logger = new LoggerFactory().CreateLogger("CustomCategory");
-            
             //Adding Custom middlewre to handle the logs
-            builder.Services.AddScoped<CodingChallenge.Logging.Interface.ILogging, CodingChallenge.Logging.Logger>();
+
+            using var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddSimpleConsole(i => i.ColorBehavior = LoggerColorBehavior.Disabled);
+            });
+
+            var logger = loggerFactory.CreateLogger<Program>();
+
+            builder.Services.AddSingleton(typeof(CodingChallenge.Logging.Interface.ILogging<>),typeof(CodingChallenge.Logging.Logger<>));
 
             //Adding other mappings
-            builder.Services.AddScoped<IDataLayer, DataLayer>();
-            builder.Services.AddScoped<IObjectDataFactory, ObjectDataFactory>();
-            builder.Services.AddScoped<ICityBusinessProvider,CityBusinessProvider>();
-            
+            builder.Services.AddScoped<CodingChallenge.DataLayer.DataLayer.IDataSource, CodingChallenge.DataLayer.DataLayer.DataSource>(); //Normally this will be the DB Interface, testing interface will be used in mock test projects
+            builder.Services.AddScoped<CodingChallenge.DataLayer.DataAdaptor.IDataLayer, CodingChallenge.DataLayer.DataAdaptor.DataLayer>();
+            builder.Services.AddScoped<CodingChallenge.DataLayer.DataProvider.Interfaces.ICityDataProvider, CodingChallenge.DataLayer.DataProvider.CityDataProvider>(); 
+            builder.Services.AddScoped<CodingChallenge.DataLayer.ObjectFactory.Interfaces.IObjectDataFactory, CodingChallenge.DataLayer.ObjectFactory.ObjectDataFactory>();
+            builder.Services.AddScoped<CodingChallenge.Business.Interfaces.ICityBusinessProvider, CodingChallenge.Business.CityBusinessProvider>();
+
             var maxBodySizeToCache = Convert.ToInt32(config["Values:MaxBodySizeToCache"]);
             //Enabling response caching
             builder.Services.AddResponseCaching(options =>
@@ -67,8 +67,13 @@ namespace CodingChallengeAPI
 
             var app = builder.Build();
 
+            //If App is Running in Debug Mode
+            bool isDebugMode = false;
+#if DEBUG
+            isDebugMode = true;
+#endif
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || isDebugMode)
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
@@ -81,7 +86,7 @@ namespace CodingChallengeAPI
 
             var cacheDurationInSeconds = Convert.ToInt32(config["Values:CacheResponseDurationInSeconds"]);
 
-            //Add Middleware
+            //Add Middleware - Response caching in the client
             app.Use(async (context, next) =>
             {
                 context.Response.GetTypedHeaders().CacheControl =
