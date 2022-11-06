@@ -58,6 +58,8 @@ namespace CodingChallengeAPI.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         protected IActionResult HandleException(String title, ResponseBase response, Exception ex)
         {
+            if (response == null)
+                response = new ResponseBase();
             response.IsSuccess = ResponseStatus.FAILED;
 
             if (ex is Exception)

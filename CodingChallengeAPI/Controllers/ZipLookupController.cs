@@ -84,7 +84,7 @@ namespace CodingChallengeAPI.Controllers
                 response.IsSuccess = true;
 
                 _logger.LogInfo(_logTitle + " End of GetCityByZipCode", new[] { zipCode });
-                _logger.LogTrace(_logTitle + " API Response", new[] { response });
+                _logger.LogTrace(_logTitle + " - GetCityByZipCode-  API Response", new[] { response });
                 return BuildActionResult(response);
             }
             catch (Exception ex)

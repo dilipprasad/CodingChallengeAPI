@@ -56,6 +56,7 @@ namespace CodingChallengeAPI
             builder.Services.AddScoped<CodingChallenge.DataLayer.DataProvider.Interfaces.ICityDataProvider, CodingChallenge.DataLayer.DataProvider.CityDataProvider>();
             builder.Services.AddScoped<CodingChallenge.DataLayer.ObjectFactory.Interfaces.IObjectDataFactory, CodingChallenge.DataLayer.ObjectFactory.ObjectDataFactory>();
             builder.Services.AddScoped<CodingChallenge.Business.Interfaces.ICityBusinessProvider, CodingChallenge.Business.CityBusinessProvider>();
+            builder.Services.AddScoped<CodingChallenge.Business.Interfaces.IAlgoChallengeBusinessProvider, CodingChallenge.Business.AlgoChallengeBusinessProvider>();
 
             var maxBodySizeToCache = Convert.ToInt32(config["Values:MaxBodySizeToCache"]);
             //Enabling response caching
