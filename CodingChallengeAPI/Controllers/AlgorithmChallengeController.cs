@@ -18,6 +18,8 @@ using System.Text;
 
 namespace CodingChallengeAPI
 {
+   
+
     [Route("[controller]")]
     [ApiController]
     [ResponseCache(NoStore = true)]
@@ -55,7 +57,7 @@ namespace CodingChallengeAPI
                 #region Validation
                 bool hasValidationEror = false;
 
-                if (csvFile == null || !csvFile.FileName.EndsWith(".csv") || csvFile.Length < 0)
+                if (csvFile == null || !csvFile.FileName.EndsWith(".csv"))
                 {
                     _logger.LogWarning(_logTitle + " Invalid file format provided, please upload a csv file with shape and color columns", null);
                     hasValidationEror = true;
@@ -67,32 +69,54 @@ namespace CodingChallengeAPI
                     return BadRequest(sbValidation.ToString());
                 #endregion Validation
 
-                string[] headers;
-                //string[] shape;
-                //string[] color;
+                string[] headers = new string[1];
                 ArrayList shapeData = new ArrayList();
                 ArrayList colorData = new ArrayList();
-                int numberOfRecords=0;
+                int numberOfLines = 0;
+
+                //Below 2 objects are used to maintain the count of the colours
+                ArrayList colorNames = new ArrayList();
+                List<int> colorsCounter = new List<int>();//Preventing Arraylist for Int due to unwanted boxing and unboxing 
+
                 using (var stream = csvFile.OpenReadStream())
                 {
-                    using (var reader = new StreamReader(csvFile.OpenReadStream()))
+                    using (var reader = new StreamReader(stream, true))
                     {
-                        headers = reader.ReadLine().Split(_algoCSVFileSplitChar);
-                        //shape = new string[length];
-                        //color = new string[length];
-                        
                         bool isEndOfData = false;//Read till last row
-                        while (!reader.EndOfStream && !isEndOfData)                        
+                        while (!reader.EndOfStream && !isEndOfData)
                         {
                             var line = reader.ReadLine();
-                            if(!string.IsNullOrWhiteSpace(line))
+                            if (!string.IsNullOrWhiteSpace(line))
                             {
+
+                                if (numberOfLines == 0)
+                                {//First Line - read headers
+                                    headers = line.Split(_algoCSVFileSplitChar);
+                                    numberOfLines++;
+                                    continue; //Move to next line without increamenting number of records
+                                }
+
+                                //Store the Coloumns
                                 string[] rows = line.Split(_algoCSVFileSplitChar);
-                                shapeData.Add(rows[0].ToString());
-                                colorData.Add(rows[1].ToString());
-                                //shape[i]=(rows[0].ToString());
-                                //color[i]=rows[1].ToString();
-                                numberOfRecords++;
+                                shapeData.Add(rows[0]);
+                                colorData.Add(rows[1]);
+
+                                //End of storing the data from CSV to an object
+
+
+                                //Now Populate the data to maintain Occurance count of each colors
+                                if (colorNames.IndexOf(rows[1]) < 0)//First Time
+                                {
+                                    colorNames.Add(rows[1]);//Add entry to Arraylist for new colour
+                                    colorsCounter.Add(1); // Default 1
+                                }
+                                else
+                                {//Already present
+                                    var idx = colorNames.IndexOf(rows[1]); //Find index position of the color
+                                    colorsCounter[idx] = colorsCounter[idx] + 1;//increment the value by 1
+                                }
+
+                                numberOfLines++;
 
                             }
                             else
@@ -102,44 +126,41 @@ namespace CodingChallengeAPI
 
                         }
                     }
-
-
                 }
-                string[] shape = (string[])shapeData.ToArray(typeof(string));
-                string[] color = (string[])colorData.ToArray(typeof(string));
+                var totalNumOfRecords = numberOfLines - 1;//Number of lines -1 to exclue header
+                //Build Heap
+                var halfSize = (int)Math.Floor((float)(totalNumOfRecords) / 2);
+                while (halfSize >= 0)
+                {
+                    MaxHeapify(colorNames, colorsCounter, halfSize, totalNumOfRecords - 1, shapeData, colorData);
+                    halfSize--;
+                }
 
-                //await _algoChallengeBusinessProvider.SolveChallenge(ref shape, ref color);
+                for (int i = 0; i < numberOfLines; i++)
+                {
+                    ExtractMax(colorNames, colorsCounter, halfSize, totalNumOfRecords - 1, shapeData, colorData);
+                }
 
-
+                await _algoChallengeBusinessProvider.SolveChallenge(ref shapeData, ref colorData);
                 _logger.LogInfo(_logTitle + " End of ComputAlgorithm", null);
-                
 
 
-
+                //Manually Flush -using statement Disposes the object prematurely
                 MemoryStream streamWr = new MemoryStream();
-                using (StreamWriter writer = new StreamWriter(streamWr))
+                StreamWriter writer = new StreamWriter(streamWr);
                 {
                     writer.WriteLine(string.Join(_algoCSVFileSplitChar, headers)); //Write header
-                    for (int i = 0; i < numberOfRecords; i++)
+                    for (int i = 0; i < numberOfLines - 1; i++)
                     {
-                        writer.WriteLine(string.Join(_algoCSVFileSplitChar, shape[i], color[i]));
+                        writer.WriteLine(string.Join(_algoCSVFileSplitChar, shapeData[i], colorData[i]));
                     }
                 }
-                //streamWr.Position = 0;
+                writer.Flush();
+                streamWr.Position = 0;
 
 
-                //HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
-                //result.Content = new StreamContent(streamWr);
-                //result.Content.Headers.ContentType =
-                //    new MediaTypeHeaderValue("text/csv");
-                //result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "SortedList.csv" };
-                //return result;
-
-
-                _logger.LogTrace(_logTitle + " - ComputAlgorithm()- API Response", new[] { shape, color });
-
+                _logger.LogTrace(_logTitle + " - ComputAlgorithm()- API Response", new[] { shapeData, colorData });
                 return File(streamWr, "text/csv", "SortedList.csv");
-                //return BuildFileActionResult(result);
 
             }
             catch (Exception ex)
@@ -147,13 +168,37 @@ namespace CodingChallengeAPI
                 _logger.LogError(_logTitle + " Error in ComputAlgorithm", new[] { ex as object });
                 return HandleException(_logTitle, null, ex);
             }
-
-
-
-
-
-
         }
 
+        private void ExtractMax(ArrayList colorNames, List<int> colorsCounter, int position, int recordsCount, ArrayList shapeData, ArrayList colorData)
+        {
+        }
+        private void MaxHeapify(ArrayList colorNames, List<int> colorsCounter, int position, int recordsCount, ArrayList shapeData, ArrayList colorData)
+        {
+            var leftPos = position * 2 + 1;
+            var rightPos = position * 2 + 2;
+            var largest = position; //Largest at the center
+
+            if (leftPos < recordsCount && colorsCounter[leftPos] > colorsCounter[position])
+                largest = leftPos;
+            if (rightPos < recordsCount && colorsCounter[rightPos] > colorsCounter[largest])
+                largest = rightPos;
+            if (largest != position)
+            {
+                //Get values to temp variable
+                var tempPos = colorNames[position];
+                var tempCtr = colorsCounter[position];
+
+                //Now swap data
+                colorNames[position] = colorNames[largest];
+                colorsCounter[position] = colorsCounter[largest];
+
+                colorNames[largest] = tempPos;
+                colorsCounter[largest] = tempCtr;
+
+                MaxHeapify(colorNames, colorsCounter, largest, recordsCount, shapeData, colorData);
+            }
+
+        }
     }
 }
