@@ -132,7 +132,10 @@ namespace CodingChallengeAPI
                     for (int i = 0; i < numberOfLines - 1; i++)
                     {
                         var item = result[i] as ColorObject;
-                        writer.WriteLine(string.Join(_algoCSVFileSplitChar, (item.ShapeObj[0] as ShapeObjects)?.Shape, item.Color));
+                        if(item != null)
+                            writer.WriteLine(string.Join(_algoCSVFileSplitChar, (item.ShapeObj[0] as ShapeObjects)?.Shape, item.Color));
+                        else
+                            writer.WriteLine(string.Join(_algoCSVFileSplitChar," "," "));
                     }
                 }
                 writer.Flush();

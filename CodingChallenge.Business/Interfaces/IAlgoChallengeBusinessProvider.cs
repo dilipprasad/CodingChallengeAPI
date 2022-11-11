@@ -5,6 +5,6 @@ namespace CodingChallenge.Business.Interfaces
 {
     public interface IAlgoChallengeBusinessProvider
     {
-        Task<ArrayList> SolveChallenge(int totalNumberOfRecords, ShapeAndColor shapeandColorObj);
+        Task<ColorObject[]> SolveChallenge(int totalNumberOfRecords, ShapeAndColor shapeandColorObj);
     }
 }

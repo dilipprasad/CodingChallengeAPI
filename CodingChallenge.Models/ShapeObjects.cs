@@ -74,12 +74,28 @@ namespace CodingChallenge.Models
             }
         }
 
-        public ColorObject this[int index] => Pop(index);
+        public ColorObject this[int index] => Pop();
 
-        public ColorObject Pop(int index)
+        public ColorObject Pop()
         {
-            var shape = ShapeObj[index] as ShapeObjects;
-            return new ColorObject(this.Color,shape.Shape);
+            string shapeName = string.Empty;
+            if(ShapeObj.Count > 0)
+            {
+                var shpeObj=( ShapeObj[0] as ShapeObjects);
+                shapeName = shpeObj?.Shape;
+                (ShapeObj[0] as ShapeObjects)?.Pop(); // Decrement count
+                if(shpeObj.Count==0)//If no more Objects for this shape are remaining, Remove that object
+                {
+                    ShapeObj.RemoveAt(0);
+                }
+                
+            }
+            else
+            {
+                 throw new Exception("No Pending Objects to pop");
+            }
+            
+            return new ColorObject(this.Color, shapeName);
         }
     }
     public class ShapeObjects
@@ -95,6 +111,10 @@ namespace CodingChallenge.Models
         /// </summary>
         public int Count { get; set; }
 
+        internal void Pop()
+        {
+            Count--;
+        }
     }
 
     /// <summary>
@@ -163,6 +183,11 @@ namespace CodingChallenge.Models
         {
             _colorObjects[index]=colorObject;
             
+        }
+
+        public void RemoveByIndex(int index)
+        {
+            _colorObjects.RemoveAt(index);
         }
     }
 }
