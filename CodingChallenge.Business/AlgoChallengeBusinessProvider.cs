@@ -38,44 +38,38 @@ namespace CodingChallenge.Business
         /// 
         /// </summary>
         /// <param name="totalNumberOfRecords">Total number of records from CSV</param>
-        /// <param name="shapeObj">Collection of the Records from CSV File</param>
+        /// <param name="shapeAndColor">Collection of the Records from CSV File</param>
         /// <param name="ColorWithCounter">keyparis = Key -Color, value -count</param>
         /// <returns></returns>
-        public Task<ShapeObjects[]> SolveChallenge(int totalNumberOfRecords, ArrayList shapeObj, Hashtable ColorWithCounter)
+        public Task<ArrayList> SolveChallenge(int totalNumberOfRecords, ShapeAndColor shapeAndColorObj)
         {
-            int distinctCount = ColorWithCounter.Count;
+            int distinctColorCount = shapeAndColorObj.GetDistinctColorCount();
 
             //Build the Heap
-            BuildHeap(totalNumberOfRecords, shapeObj, ColorWithCounter);
+            //BuildHeap(totalNumberOfRecords, shapeAndColorObj);
+            BuildHeap(distinctColorCount, shapeAndColorObj);
 
-            ShapeObjects[] shapeObjNew = new ShapeObjects[totalNumberOfRecords];
-            //for (int idx = 0; idx < distinctCount; idx++)
-            //{
-            //    var maxColor = ExtractMax(shapeObj, ColorWithCounter, totalNumberOfRecords - idx);
-
-            //}
-            //Validate max heap
-
-            for (int idx = 0; idx < distinctCount; idx++)
+            ArrayList shapeObjNew = new ArrayList();
+            
+            for (int idx = 0; idx < distinctColorCount; idx++)
             {
-                var maxColor = ExtractMax(shapeObj, ColorWithCounter, totalNumberOfRecords - idx);
+                //var maxColor = ExtractMax(shapeAndColorObj,  totalNumberOfRecords - idx);
+                var maxColor = ExtractMax(shapeAndColorObj, distinctColorCount - idx);
 
                 var p = idx;
-                while (shapeObjNew[p] != null)
+                //while (shapeObjNew[p] != null)
+                while (shapeObjNew.IndexOf(p) != -1)
                     p += 1;
 
-                //var obj = shapeObj[idx] as ShapeObjects;
-                //var obj = (DictionaryEntry)GetElementAtIndex(ColorWithCounter, idx);
                 
-                var freq = Convert.ToInt32(ColorWithCounter[maxColor.Color]);
-                //var freq = Convert.ToInt32(ColorWithCounter[obj.Color]); //Get the frequency of the word
+                var freq = maxColor.Count;
                 for (int k = 0; k < freq; k++)
                 {
-                    if (p + distinctCount * k >= totalNumberOfRecords)
+                    if (p + distinctColorCount * k >= totalNumberOfRecords)
                         break;//Problem cannot
-                    //
-                    shapeObjNew[p + distinctCount * k] = maxColor;
-                    //shapeObjNew.Insert(p + distinctCount * k, maxColor);
+                    
+                    //shapeObjNew[p + distinctColorCount * k] = maxColor[k];
+                    shapeObjNew.Insert(p + distinctColorCount * k, maxColor[k]);
                 }
 
             }
@@ -83,24 +77,24 @@ namespace CodingChallenge.Business
             return Task.FromResult(shapeObjNew);
         }
 
-        private void BuildHeap(int totalNumberOfRecords, ArrayList shapeObj, Hashtable ColorWithCounter)
+        private void BuildHeap(int totalNumberOfRecords, ShapeAndColor shapeAndColorObj)
         {
             //Build Heap
             var centerPos = (int)Math.Floor((float)(totalNumberOfRecords) / 2);
             while (centerPos >= 0)
             {
-                BuildMaxHeap(shapeObj, ColorWithCounter, centerPos, totalNumberOfRecords);
+                BuildMaxHeap(shapeAndColorObj,  centerPos, totalNumberOfRecords);
                 centerPos -= 1; //Decrement by 1
             }
 
 
         }
 
-        private int GetFrequency(ArrayList shapeObj, Hashtable ColorWithCounter, int index)
+        private int GetFrequency(ShapeAndColor shapeAndColorObj, int index)
         {
-            var colorObj = shapeObj[index] as ShapeObjects;
+            var colorObj = shapeAndColorObj.GetColorObjectByIndex(index);
 
-            return Convert.ToInt32(ColorWithCounter[colorObj.Color]); //Get frequency
+            return Convert.ToInt32(colorObj.Count); //Get frequency
         }
 
         private int GetCount(Dictionary<string, int> ColorWithCounter, int index)
@@ -122,45 +116,35 @@ namespace CodingChallenge.Business
             return new KeyValuePair<string, int>();
         }
 
-        private void BuildMaxHeap(ArrayList shapeObj, Hashtable ColorWithCounter, int position, int recordsCount)
+        private void BuildMaxHeap(ShapeAndColor shapeAndColorObj, int position, int recordsCount)
         {
             var leftPos = position * 2 + 1;
             var rightPos = position * 2 + 2;
             var largest = position; //Largest at the center
 
-            if (leftPos < recordsCount && GetFrequency(shapeObj, ColorWithCounter, leftPos) > GetFrequency(shapeObj, ColorWithCounter, position))
+            if (leftPos < recordsCount && GetFrequency(shapeAndColorObj,   leftPos) > GetFrequency(shapeAndColorObj,   position))
                 largest = leftPos;
-            if (rightPos < recordsCount && GetFrequency(shapeObj, ColorWithCounter, rightPos) > GetFrequency(shapeObj, ColorWithCounter, largest))
+            if (rightPos < recordsCount && GetFrequency(shapeAndColorObj,   rightPos) > GetFrequency(shapeAndColorObj,  largest))
                 largest = rightPos;
 
             if (largest != position)
             {
-                SwapPosition(shapeObj, position, largest);
-                BuildMaxHeap(shapeObj, ColorWithCounter, largest, recordsCount);
+                shapeAndColorObj.SwapPosition(position, largest);
+                BuildMaxHeap(shapeAndColorObj,   largest, recordsCount);
 
             }
 
         }
 
 
-        private void SwapPosition(ArrayList shapeObj, int position, int largest)
+        private ColorObject ExtractMax(ShapeAndColor shapeAndColorObj, int recordsCount)
         {
-            //Get values to temp variable
-            var tempObj = shapeObj[position];
-
-            //Now swap data
-            shapeObj[position] = shapeObj[largest];
-
-            shapeObj[largest] = tempObj;
-        }
-
-        private ShapeObjects ExtractMax(ArrayList shapeObj, Hashtable ColorWithCounter, int recordsCount)
-        {
-            var maxColor = shapeObj[0] as ShapeObjects;
+            var maxColor = shapeAndColorObj.GetColorObjectByIndex(0) as ColorObject;
             if (recordsCount > 1)
             {
-                shapeObj[0] = shapeObj[recordsCount - 1];
-                BuildMaxHeap(shapeObj, ColorWithCounter, 0, recordsCount - 1);
+                //shapeObj[0] = shapeObj[recordsCount - 1];
+                shapeAndColorObj.SetColorObjectByIndex(shapeAndColorObj.GetColorObjectByIndex(recordsCount - 1),0);
+                BuildMaxHeap(shapeAndColorObj,  0, recordsCount - 1);
             }
             return maxColor;
         }

@@ -19,7 +19,7 @@ using System.Text;
 
 namespace CodingChallengeAPI
 {
-   
+
 
     [Route("[controller]")]
     [ApiController]
@@ -71,11 +71,9 @@ namespace CodingChallengeAPI
                 #endregion Validation
 
                 string[] headers = new string[1];
-                ArrayList shapeObj = new ArrayList();
+                ShapeAndColor shapeandColorObj = new ShapeAndColor();
                 int numberOfLines = 0;
 
-                //maintain the count of the colours
-                Hashtable colorsWithCount = new Hashtable();
 
                 using (var stream = csvFile.OpenReadStream())
                 {
@@ -98,33 +96,16 @@ namespace CodingChallengeAPI
 
                                 //Store the Coloumns
                                 string[] rows = line.Split(_algoCSVFileSplitChar);
-                                //shapeData.Add(rows[0]);
-                                //colorData.Add(rows[1]);
-                                shapeObj.Add(new ShapeObjects()
-                                {
-                                    Shape= rows[0],
-                                    Color= rows[1]
-                                });
 
-                                //End of storing the data from CSV to an object
                                 #endregion PopulateShapeObj
 
                                 #region maintianCounter
                                 //Now Populate the data to maintain Occurance count of each colors
-                                if (!colorsWithCount.ContainsKey(rows[1]))//First Time
-                                {
-                                    colorsWithCount.Add(rows[1],1);//Add entryfor new colour
-                                    
-                                }
-                                else
-                                {//Already present
-                                    var color = rows[1];
-                                    colorsWithCount[color] = Convert.ToInt32(colorsWithCount[color]) + 1;//increment the value by 1
-                                }
+                                shapeandColorObj.Add(rows[1], rows[0]);
                                 #endregion maintianCounter
 
-                                numberOfLines++;
-                                
+                                   numberOfLines++;
+
                             }
                             else
                             {
@@ -138,7 +119,7 @@ namespace CodingChallengeAPI
 
 
                 //await _algoChallengeBusinessProvider.SolveChallenge(totalNumOfRecords, ref shapeObj);
-               var result= await new AlgoChallengeBusinessProvider().SolveChallenge(totalNumOfRecords, shapeObj, colorsWithCount);
+                var result = await new AlgoChallengeBusinessProvider().SolveChallenge(totalNumOfRecords, shapeandColorObj);
 
                 _logger.LogInfo(_logTitle + " End of ComputAlgorithm", null);
 
@@ -150,8 +131,8 @@ namespace CodingChallengeAPI
                     writer.WriteLine(string.Join(_algoCSVFileSplitChar, headers)); //Write header
                     for (int i = 0; i < numberOfLines - 1; i++)
                     {
-                        var item = result[i] as ShapeObjects;
-                        writer.WriteLine(string.Join(_algoCSVFileSplitChar, item.Shape, item.Color));
+                        var item = result[i] as ColorObject;
+                        writer.WriteLine(string.Join(_algoCSVFileSplitChar, (item.ShapeObj[0] as ShapeObjects)?.Shape, item.Color));
                     }
                 }
                 writer.Flush();
@@ -169,6 +150,6 @@ namespace CodingChallengeAPI
             }
         }
 
-   
+
     }
 }
