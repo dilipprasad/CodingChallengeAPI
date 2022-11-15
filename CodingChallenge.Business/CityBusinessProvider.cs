@@ -21,7 +21,7 @@ namespace CodingChallenge.Business
         {
             _logger = logger;
             _objectDataFactory = objectDataFactory;
-            var res = _objectDataFactory.GetCityDataFactory().Result;
+            var res = _objectDataFactory.GetCityDataFactory().Result;//This causes Threading issue, so always use synchronous object creation 
             _cityDataProvider = (ICityDataProvider) res;
         }
 
